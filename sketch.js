@@ -9,9 +9,9 @@ let speedy = 0.5;
 
 let input;
 let button;
-let wordGenerator;
+let characterGenerator;
 
-function draw() {
+function draw() { //taken from https://editor.p5js.org/amena91/sketches/B1JuX5rjb for background animation
   let sinval = sin(angle);
   let sky1 = map(sinval, -1, 1, 0, 255);
   let sky2 = map(sinval, -1, 1, 255, 0);
@@ -36,35 +36,24 @@ function setup() {
   background(255);
 
 
-  input = createInput();
+  input = createInput(); //input type is button
   input.position(650, 400);
 
   button = createButton('press');
   button.position(800, 400);
-  button.mousePressed(display);
+  button.mousePressed(display); //when mouse is pressed it will display the inputted character
 
 
-  wordGenerator = createElement('h1', 'Type Anything');
-  wordGenerator.position(650, 330);
+  characterGenerator = createElement('h1', 'Type Anything'); //type anything will be in heading1
+  characterGenerator.position(650, 330);
   
   
  
 }
 
 function display() { 
-  const word = input.value();
-  wordGenerator.html(word);
-  input.value('');
-
-  for (let i = 0; i < 1000; i++) {
-    push();
-    fill(random(0), 0, 0);
-    translate(random(width), random(height));
-    rotate(random(2 * PI));
-    text(word, 0, 0);
-    pop();
-  }
-
-  
+  const character = input.value();
+  characterGenerator.html(character);
+  input.value(''); //to display input value in place of h1 
   
 }
