@@ -1,59 +1,58 @@
-let angle = 0.0;
-let x = 100;
-let y = 100;
-let w = 60;
-let h = 60;
-
-let speedx = 0.5;
-let speedy = 0.5;
-
-let input;
-let button;
-let characterGenerator;
-
-function draw() { //taken from https://editor.p5js.org/amena91/sketches/B1JuX5rjb for background animation
-  let sinval = sin(angle);
-  let sky1 = map(sinval, -1, 1, 0, 255);
-  let sky2 = map(sinval, -1, 1, 255, 0);
-  background(sky1);
-  angle += 0.1;
-  
-  fill(sky2);
-  noStroke();
-  ellipse(random()*width,random()*height,3,3);
-  ellipse(random()*width,random()*height,5,5);
-  ellipse(random()*width,random()*height,1,1);
-  ellipse(random()*width,random()*height,2,2);
-  ellipse(random()*width,random()*height,5,5);
-  
-  
-}
- 
-
 function setup() {
-  // create canvas
   createCanvas(windowWidth, windowHeight);
-  background(255);
-
-
-  input = createInput(); //input type is button
-  input.position(650, 400);
-
-  button = createButton('press');
-  button.position(800, 400);
-  button.mousePressed(display); //when mouse is pressed it will display the inputted character
-
-
-  characterGenerator = createElement('h1', 'Type Anything'); //type anything will be in heading1
-  characterGenerator.position(650, 330);
-  
-  
- 
+  angleMode(DEGREES);
+  frameRate(1); // Update every second
 }
 
-function display() { 
-  const character = input.value();
-  characterGenerator.html(character);
-  input.value(''); //to display input value in place of h1 
-  
+function draw() {
+  background(255);
+  translate(width / 2, height / 2);
+  rotate(-90); // Adjust for 0 degrees at the top
+
+  let now = new Date();
+  let seconds = now.getSeconds();
+  let minutes = now.getMinutes();
+  let hours = now.getHours() % 12; // Convert 24-hour time to 12-hour time
+
+  // Draw clock face
+  stroke(0);
+  strokeWeight(8);
+  fill(0);
+  ellipse(0, 0, 300, 300);
+
+  // Draw hour hand
+  stroke(255);
+  strokeWeight(8);
+  line(0, 0, 60 * cos(360 * hours / 12), 60 * sin(360 * hours / 12));
+
+  // Draw minute hand
+  stroke(255);
+  strokeWeight(5);
+  line(0, 0, 90 * cos(360 * minutes / 60), 90 * sin(360 * minutes / 60));
+
+  // Draw second hand
+  stroke(150, 50, 100); // purplish
+  strokeWeight(1);
+  line(0, 0, 100 * cos(360 * seconds / 60), 100 * sin(360 * seconds / 60));
+
+  stroke(255, 150);
+  secondComponent(seconds);
+}
+
+function secondComponent(seconds) {
+  for (let i = 0; i < 60; i++) {
+    let x = 135 * cos(360 * i / 60);
+    let y = 135 * sin(360 * i / 60);
+
+   
+    if (i % 5 === 0) {
+      noFill();
+      ellipse(x, y, 15, 15); // Draw circles at hour positions
+    } else {
+      if (i <= seconds) {
+        noFill();
+        line(x - 10, y - 2, 10, 4); // Draw lines as seconds pass
+      }
+    }
+  }
 }
