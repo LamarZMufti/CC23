@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Sketch</title>
-
-    <link rel="stylesheet" type="text/css" href="style.css">
-
-    <script src="libraries/p5.min.js"></script>
-    <script src="libraries/p5.sound.min.js"></script>
-  </head>
-
-  <body>
-    <script src="sketch.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="sketch.js"></script>
+  <title>Weather API Example</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Weather Information</h1>
+    <input type="text" id="search-input" placeholder="Enter city name">
+    <button id="search-btn">Search</button>
+    <div id="weather-info">
+      <p>Enter a city and click "Search" to get weather information.</p>
+    </div>
+  </div>
+</body>
 </html>
