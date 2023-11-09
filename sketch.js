@@ -1,58 +1,59 @@
-let classifier;
-// Model URL
-let imageModelURL = 'https://teachablemachine.withgoogle.com/models/bXy2kDNi/';
-
-// Video
-let video;
-let flippedVideo;
-// To store the classification
-let label = "";
-
-// Load the model first
-function preload() {
-  classifier = ml5.imageClassifier(imageModelURL + 'model.json');
-}
+let particles = [];
 
 function setup() {
-  createCanvas(320, 260);
-  // Create the video
-  video = createCapture(VIDEO);
-  video.size(320, 240);
-  video.hide();
-
-  flippedVideo = ml5.flipImage(video)
-  // Start classifying
-  classifyVideo();
+  createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
-  background(0);
-  // Draw the video
-  image(flippedVideo, 0, 0);
+  background(0, 25); // Semi-transparent background for trails
 
-  // Draw the label
-  fill(255);
-  textSize(16);
-  textAlign(CENTER);
-  text(label, width / 2, height - 4);
-}
+  // Creates a new particle at the mouse position
+  let p = createVector(mouseX, mouseY);
+  let particle = new Particle(p);
+  particles.push(particle);
 
-// Get a prediction for the current video frame
-function classifyVideo() {
-  flippedVideo = ml5.flipImage(video)
-  classifier.classify(flippedVideo, gotResult);
-}
+  // Updates and displays particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update();
+    particles[i].display();
 
-// When we get a result
-function gotResult(error, results) {
-  // If there is an error
-  if (error) {
-    console.error(error);
-    return;
+    // Removes particles that are off-screen
+    if (particles[i].isOffScreen()) {
+      particles.splice(i, 1);
+    }
   }
-  // The results are in an array ordered by confidence.
-  // console.log(results[0]);
-  label = results[0].label;
-  // Classifiy again!
-  classifyVideo();
+}
+
+class Particle {
+  constructor(position) {
+    this.position = position.copy();
+    this.velocity = createVector(random(-2, 2), random(-2, 2));
+    this.acceleration = createVector(0, 0);
+    this.lifespan = 255; // Particle's lifespan
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0.5); 
+
+    this.lifespan -= 2; // Decrease the lifespan over time
+  }
+
+  display() {
+    stroke(255, this.lifespan);
+    strokeWeight(2);
+    fill(255, this.lifespan);
+    ellipse(this.position.x, this.position.y, 12, 12);
+  }
+
+  isOffScreen() {
+    return (
+      this.position.x < 0 ||
+      this.position.x > width ||
+      this.position.y < 0 ||
+      this.position.y > height ||
+      this.lifespan < 0
+    );
+  }
 }
