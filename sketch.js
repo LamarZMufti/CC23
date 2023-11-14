@@ -1,59 +1,63 @@
-let particles = [];
+// The video
+let video;
+// For displaying the label
+let label = "waiting...";
+// The classifier
+let classifier;
+let modelURL = 'https://teachablemachine.withgoogle.com/models/[...]';
+
+// STEP 1: Load the model!
+function preload() {
+  classifier = ml5.imageClassifier(modelURL + 'model.json');
+}
+
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(640, 520);
+  // Create the video
+  video = createCapture(VIDEO);
+  video.hide();
+  // STEP 2: Start classifying
+  classifyVideo();
+}
+
+// STEP 2 classify the videeo!
+function classifyVideo() {
+  classifier.classify(video, gotResults);
 }
 
 function draw() {
-  background(0, 25); // Semi-transparent background for trails
+  background(0);
 
-  // Creates a new particle at the mouse position
-  let p = createVector(mouseX, mouseY);
-  let particle = new Particle(p);
-  particles.push(particle);
+  // Draw the video
+  image(video, 0, 0);
 
-  // Updates and displays particles
-  for (let i = particles.length - 1; i >= 0; i--) {
-    particles[i].update();
-    particles[i].display();
+  // STEP 4: Draw the label
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  fill(255);
+  text(label, width / 2, height - 16);
 
-    // Removes particles that are off-screen
-    if (particles[i].isOffScreen()) {
-      particles.splice(i, 1);
-    }
+  
+  if (label == "Camera") {
+  } else if (label == "Lemon") {
+  } else if (label == "Radio") {
+  } else if (label == "TV") {
   }
+
+
+  textSize(256);
+ 
 }
 
-class Particle {
-  constructor(position) {
-    this.position = position.copy();
-    this.velocity = createVector(random(-2, 2), random(-2, 2));
-    this.acceleration = createVector(0, 0);
-    this.lifespan = 255; // Particle's lifespan
+// STEP 3: Get the classification!
+function gotResults(error, results) {
+  // Something went wrong!
+  if (error) {
+    console.error(error);
+    return;
   }
-
-  update() {
-    this.velocity.add(this.acceleration);
-    this.position.add(this.velocity);
-    this.acceleration.mult(0.5); 
-
-    this.lifespan -= 2; // Decrease the lifespan over time
-  }
-
-  display() {
-    stroke(255, this.lifespan);
-    strokeWeight(2);
-    fill(255, this.lifespan);
-    ellipse(this.position.x, this.position.y, 12, 12);
-  }
-
-  isOffScreen() {
-    return (
-      this.position.x < 0 ||
-      this.position.x > width ||
-      this.position.y < 0 ||
-      this.position.y > height ||
-      this.lifespan < 0
-    );
-  }
+  // Store the label and classify again!
+  label = results[0].label;
+  classifyVideo();
 }
