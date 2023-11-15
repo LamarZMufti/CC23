@@ -67,3 +67,4 @@ function gotResults(error, results) {
   label = results[0].label;
   classifyVideo();
 }
+
