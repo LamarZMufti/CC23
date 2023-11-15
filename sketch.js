@@ -4,13 +4,15 @@ let video;
 let label = "waiting...";
 // The classifier
 let classifier;
-let modelURL = 'https://teachablemachine.withgoogle.com/models/[...]';
+let modelURL = 'https://teachablemachine.withgoogle.com/models/WfKDGMqUo/';
+
+// Emoji variable
+let emoji = "⁉️";
 
 // STEP 1: Load the model!
 function preload() {
   classifier = ml5.imageClassifier(modelURL + 'model.json');
 }
-
 
 function setup() {
   createCanvas(640, 520);
@@ -21,7 +23,7 @@ function setup() {
   classifyVideo();
 }
 
-// STEP 2 classify the videeo!
+// STEP 2: Classify the video!
 function classifyVideo() {
   classifier.classify(video, gotResults);
 }
@@ -38,16 +40,20 @@ function draw() {
   fill(255);
   text(label, width / 2, height - 16);
 
-  
+  // Update emoji based on label
   if (label == "Camera") {
+    emoji = "📷";
   } else if (label == "Lemon") {
+    emoji = "🍋";
   } else if (label == "Radio") {
+    emoji = "📻";
   } else if (label == "TV") {
+    emoji = "📺";
   }
 
-
-  textSize(256);
- 
+  // Draw the emoji
+  textSize(64); // Adjust the size as needed
+  text(emoji, width / 2, height / 2);
 }
 
 // STEP 3: Get the classification!
