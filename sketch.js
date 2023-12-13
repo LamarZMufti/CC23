@@ -1,153 +1,123 @@
-// Array to store created primitive objects
-let primitives = [];
-// Variable to store the currently selected primitive
-let selectedPrimitive = null;
-// Variable to store the type of primitive being created
-let currentPrimitiveType;
-// Sliders and color picker for customization
-let sizeSlider, colorPicker;
+let particles = [];
+let clearCanvasButton;
+let shapeSelector;
 
 function setup() {
-  createCanvas(800, 600, WEBGL);
+  createCanvas(windowWidth, 600);
 
-  // Create buttons for selecting primitives
-  createPrimitiveButton('Cube', 50, 30);
-  createPrimitiveButton('Sphere', 50, 70);
-  createPrimitiveButton('Cylinder', 50, 110);
+  clearCanvasButton = createButton('Clear Canvas');
+  clearCanvasButton.position(10, height + 10);
+  clearCanvasButton.mousePressed(() => {
+    particles = [];
+  });
 
-  // Create sliders and color picker for customization
-  sizeSlider = createSlider(10, 200, 50);
-  sizeSlider.position(10, height + 10);
-
-  colorPicker = createColorPicker('#ff0000');
-  colorPicker.position(10, height + 40);
+  // Dropdown menu for selecting particle shape
+  shapeSelector = createSelect();
+  shapeSelector.position(10, height + 40);
+  shapeSelector.option('Ellipse');
+  shapeSelector.option('Rectangle');
+  shapeSelector.option('Triangle');
 }
 
 function draw() {
-  background(240);
+  background(0); // Dark background
 
-  // Orbit control for easy navigation
-  orbitControl();
-
-  // Display and update all primitives
-  for (let i = 0; i < primitives.length; i++) {
-    primitives[i].display();
-    primitives[i].update();
+  for (let particle of particles) {
+    particle.update();
+    particle.display();
+    particle.checkEdges();
+    for (let other of particles) {
+      if (particle !== other) {
+        particle.interact(other);
+      }
+    }
   }
+
+  // Randomize illustration
+  randomizeIllustration();
 }
 
 function mouseClicked() {
-  // Check if the user clicked on a primitive
-  selectedPrimitive = null;
-  // Iterate through the primitives from top to bottom to find the topmost clicked primitive
-  for (let i = primitives.length - 1; i >= 0; i--) {
-    if (primitives[i].contains(mouseX, mouseY)) {
-      selectedPrimitive = primitives[i];
-      break;
+  let shape = shapeSelector.value();
+  particles.push(new Particle(mouseX, mouseY, shape));
+}
+
+function randomizeIllustration() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      let distance = dist(particles[i].position.x, particles[i].position.y, particles[j].position.x, particles[j].position.y);
+      if (distance < 100) {
+        blendMode(ADD); // Blend mode for glowing effect
+        stroke(255, 100); // Dim white stroke for connections
+        line(particles[i].position.x, particles[i].position.y, particles[j].position.x, particles[j].position.y);
+        blendMode(BLEND); // Reset blend mode
+      }
     }
   }
 }
 
-function mouseDragged() {
-  // Move the selected primitive with the mouse drag
-  if (selectedPrimitive) {
-    selectedPrimitive.position.x += mouseX - pmouseX;
-    selectedPrimitive.position.y += mouseY - pmouseY;
-  }
-}
-
-function keyPressed() {
-  // Delete the selected primitive when the 'Delete' key is pressed
-  if (keyCode === DELETE && selectedPrimitive) {
-    let index = primitives.indexOf(selectedPrimitive);
-    primitives.splice(index, 1);
-    selectedPrimitive = null;
-  }
-}
-
-function createPrimitiveButton(type, x, y) {
-  let button = createButton(type);
-  button.position(x, y);
-  button.mousePressed(() => {
-    currentPrimitiveType = type.toLowerCase();
-    createPrimitive(currentPrimitiveType);
-  });
-}
-
-function createPrimitive(type) {
-  let primitive;
-  switch (type) {
-    case 'cube':
-      primitive = new Cube();
-      break;
-    case 'sphere':
-      primitive = new Sphere();
-      break;
-    case 'cylinder':
-      primitive = new Cylinder();
-      break;
-  }
-  primitives.push(primitive);
-}
-
-// Base class for primitive objects
-class Primitive {
-  constructor() {
-    this.size = 50;
-    this.color = color(255, 0, 0);
-    this.position = createVector(random(-200, 200), random(-200, 200), 0);
+class Particle {
+  constructor(x, y, shape) {
+    this.position = createVector(x, y);
+    this.velocity = p5.Vector.random2D().mult(random(1, 3));
+    this.size = random(2, 5); // Smaller particles
+    this.color = color(255, random(150, 255), random(150, 255)); // Softer colors
+    this.shape = shape || 'Ellipse';
   }
 
-  // Display the primitive
+  update() {
+    this.position.add(this.velocity);
+  }
+
   display() {
-    push();
-    translate(this.position.x, this.position.y, this.position.z);
+    // Draw the actual shape
     fill(this.color);
     noStroke();
-    this.drawGeometry();
-    pop();
+    if (this.shape === 'Ellipse') {
+      ellipse(this.position.x, this.position.y, this.size, this.size);
+    } else if (this.shape === 'Rectangle') {
+      rect(this.position.x, this.position.y, this.size, this.size);
+    } else if (this.shape === 'Triangle') {
+      triangle(
+        this.position.x - this.size / 2, this.position.y + this.size / 2,
+        this.position.x + this.size / 2, this.position.y + this.size / 2,
+        this.position.x, this.position.y - this.size / 2
+      );
+    }
+
+    // Draw a slightly larger, blurred version for the glowing effect
+    for (let i = 0; i < 5; i++) {
+      let alpha = map(i, 0, 4, 50, 0);
+      fill(this.color.levels[0], this.color.levels[1], this.color.levels[2], alpha);
+      if (this.shape === 'Ellipse') {
+        ellipse(this.position.x, this.position.y, this.size * 2 + i, this.size * 2 + i);
+      } else if (this.shape === 'Rectangle') {
+        rect(this.position.x, this.position.y, this.size * 2 + i, this.size * 2 + i);
+      } else if (this.shape === 'Triangle') {
+        triangle(
+          this.position.x - (this.size + i) / 2, this.position.y + (this.size + i) / 2,
+          this.position.x + (this.size + i) / 2, this.position.y + (this.size + i) / 2,
+          this.position.x, this.position.y - (this.size + i) / 2
+        );
+      }
+    }
   }
 
-  // Update the primitive based on sliders and color picker
-  update() {
-    this.size = sizeSlider.value();
-    this.color = colorPicker.color();
+  checkEdges() {
+    if (this.position.x < 0 || this.position.x > width) {
+      this.velocity.x *= -1;
+    }
+    if (this.position.y < 0 || this.position.y > height) {
+      this.velocity.y *= -1;
+    }
   }
 
-  // Check if a point (x, y) is inside the primitive
-  contains(x, y) {
-    return (
-      x > this.position.x - this.size / 2 &&
-      x < this.position.x + this.size / 2 &&
-      y > this.position.y - this.size / 2 &&
-      y < this.position.y + this.size / 2
-    );
-  }
-
-  // Method to be overridden by subclasses to draw specific geometry
-  drawGeometry() {
-    // This method should be overridden by subclasses to draw the specific geometry
+  interact(other) {
+    let attraction = p5.Vector.sub(other.position, this.position);
+    let distance = attraction.mag();
+    if (distance < 50) {
+      let force = attraction.setMag(0.1);
+      this.velocity.add(force);
+    }
   }
 }
-
-// Subclass for cube primitive
-class Cube extends Primitive {
-  drawGeometry() {
-    box(this.size);
-  }
-}
-
-// Subclass for sphere primitive
-class Sphere extends Primitive {
-  drawGeometry() {
-    sphere(this.size / 2);
-  }
-}
-
-// Subclass for cylinder primitive
-class Cylinder extends Primitive {
-  drawGeometry() {
-    cylinder(this.size / 2, this.size / 2, this.size, 24, 1);
-  }
-}
-
